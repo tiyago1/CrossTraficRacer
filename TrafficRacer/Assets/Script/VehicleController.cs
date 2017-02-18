@@ -3,6 +3,7 @@ using UnityEngine;
 using System.Collections;
 using UnityEngine.EventSystems;
 using System.Collections.Generic;
+using System;
 
 public class VehicleController : MonoBehaviour
 {
@@ -22,6 +23,8 @@ public class VehicleController : MonoBehaviour
     public List<Animator> CarLightAnimator;
     public RayController RayController;
     public DirectionType mDirection;
+
+    public event Action Crush;
 
 	#endregion //Fields
 	
@@ -111,11 +114,23 @@ public class VehicleController : MonoBehaviour
         Debug.Log("Stop");
     }
 
-    public void OnMouseDrag() 
+    //public void OnMouseDrag() 
+    //{
+    //    mSpeed = 10;
+    //}
+
+    public void OnCollisionEnter2D(Collision2D coll) 
     {
-        mSpeed = 10;
+        OnCrushed();
     }
 
+    public void OnCrushed()
+    {
+        if (Crush != null)
+        {
+            Crush();
+        }
+    }
 	#endregion // Public Methods
 	
 	#region Private Methods

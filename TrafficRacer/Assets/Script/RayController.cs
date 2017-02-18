@@ -34,8 +34,6 @@ public class RayController : MonoBehaviour
                 b = false;
                 OnNotDetected();
             }
-
-         //   Debug.Log(hit.collider.name + " YY " + hit.distance);
         }
         else
         {

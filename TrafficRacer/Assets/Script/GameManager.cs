@@ -17,12 +17,12 @@ public class GameManager : MonoBehaviour
 {
 	#region Fields
 
+    public UIManager IngameUIManager;
+
     public List<GameObject> CarsPrefabs;
     public List<Vector3> SpawnTransform;
     public List<SpawnPoint> SpawnPoints;
-
-    public int Time;
-    public Dictionary<SpawnPoint, int> CarCount;
+    public List<VehicleController> SpawnedVehicles;
 
     private SpawnPoint mSpawnPoint;
 
@@ -33,13 +33,14 @@ public class GameManager : MonoBehaviour
 	private void Start () 
 	{
 		Initialize();
+        StartGame();
 	}
 	
 	private void Update () 
 	{
         if (Input.GetKeyDown(KeyCode.Space))
         {
-            StartGame();
+           
         }
 
         if (Input.GetKeyDown(KeyCode.Alpha1))
@@ -59,11 +60,8 @@ public class GameManager : MonoBehaviour
 	
 	public void Initialize()
 	{
-        CarCount = new Dictionary<SpawnPoint, int>();
-
         for (int i = 0; i < SpawnPoints.Count; i++)
         {
-            CarCount.Add(SpawnPoints[i], 0);
             SpawnTransform.Add(SpawnPoints[i].Position);
         }
 	}
@@ -71,7 +69,7 @@ public class GameManager : MonoBehaviour
     public void StartGame()
     {
         Initialize();
-        StartCoroutine(TimeTicker());
+        IngameUIManager.StartTimer();
         StartCoroutine(CarSpawner());
     }
 
@@ -126,11 +124,22 @@ public class GameManager : MonoBehaviour
         if (spawnPoint.SpawnCount < 2 && forwardPoint.SpawnCount == 0)
         {
             GameObject gm = Instantiate(carObject, position, Quaternion.identity) as GameObject;
+            VehicleController vehicleControl = gm.GetComponent<VehicleController>();
+            SpawnedVehicles.Add(vehicleControl);
+            vehicleControl.Crush += vehicleControl_Crush;
             gm.tag = direction.ToString();
             gm.GetComponent<VehicleController>().Initialize(speed,direction);
             SpawnPoints.FirstOrDefault(it => it.Position == ReversePosition(position, direction)).SpawnCount++;
             spawnPoint.TriggeredVehicle += spawnPoint_TriggeredVehicle;
         }
+    }
+
+    private void vehicleControl_Crush()
+    {
+        SpawnedVehicles.ForEach(it => Destroy(it.gameObject));
+        SpawnedVehicles.Clear();
+        StopAllCoroutines();
+        IngameUIManager.GameOver();
     }
 
     void spawnPoint_TriggeredVehicle(GameObject obj, SpawnPoint spawn)
@@ -158,6 +167,8 @@ public class GameManager : MonoBehaviour
     {
         DirectionType type = DirectionType.None;
 
+        Debug.Log("asdasd" +position);
+
         if (position.x == 9.35f && (position.y == -1.09f || position.y == 1.09f))
         {
             type = DirectionType.Right;
@@ -179,14 +190,7 @@ public class GameManager : MonoBehaviour
         return type;
     }
 
-    private IEnumerator TimeTicker()
-    {
-        while (true)
-        {
-            yield return new WaitForEndOfFrame();
-            Time++;
-        }
-    }
+  
 
 	#endregion //Private Methods
 }

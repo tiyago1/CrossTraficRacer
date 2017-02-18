@@ -16,7 +16,7 @@ public class SpawnPoint : MonoBehaviour
 	
 	#region Unity Methods
 	
-	private void Start () 
+	private void Awake () 
 	{
         Position = this.transform.position;
 	}
