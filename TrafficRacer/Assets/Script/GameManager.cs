@@ -35,7 +35,9 @@ public class GameManager : MonoBehaviour
 		Initialize();
         StartGame();
 	}
-	
+
+    int? lastPositionIndex = null;
+
 	private void Update () 
 	{
         if (Input.GetKeyDown(KeyCode.Space))
@@ -45,12 +47,13 @@ public class GameManager : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.Alpha1))
         {
-            CarCreate(CarsPrefabs[RandomNumberGenerat()], SpawnTransform[7], RandomSpeed());
+          
+                CarCreate(CarsPrefabs[RandomNumberGenerat()], SpawnTransform[1], RandomSpeed());
         }
 
         if (Input.GetKeyDown(KeyCode.Alpha2))
         {
-            CarCreate(CarsPrefabs[RandomNumberGenerat()], SpawnTransform[4], RandomSpeed());
+            CarCreate(CarsPrefabs[RandomNumberGenerat()], SpawnTransform[2], RandomSpeed());
         }
 	}
 	
@@ -81,8 +84,13 @@ public class GameManager : MonoBehaviour
     {
         while (true)
         {
-            yield return new WaitForSeconds(1.0f);
-            CarCreate(CarsPrefabs[RandomNumberGenerat()], SpawnTransform[RandomTransformGenerate()], RandomSpeed());
+            yield return new WaitForSeconds(0.8f);
+            int randomIndex = RandomTransformGenerate();
+            if (lastPositionIndex != randomIndex || lastPositionIndex == null)
+            {
+                lastPositionIndex = randomIndex;
+                CarCreate(CarsPrefabs[RandomNumberGenerat()], SpawnTransform[randomIndex], RandomSpeed());
+            }
         }
     }
 
@@ -96,13 +104,13 @@ public class GameManager : MonoBehaviour
                 value = new Vector3(position.x, position.y * -1, position.z);
                 break;
             case DirectionType.Down:
-                value = new Vector3(position.x, position.y * -1, position.z);
+                value = new Vector3(position.x, position.y * - 1, position.z);
                 break;
             case DirectionType.Left:
-                value = new Vector3(position.x * -1, position.y, position.z);
+                value = new Vector3(position.x * - 1, position.y , position.z);
                 break;
             case DirectionType.Right:
-                value = new Vector3(position.x * -1,position.y,position.z);
+                value = new Vector3((position.x - (position.x * 2)),position.y,position.z);
                 break;
             case DirectionType.None:
                 break;
@@ -111,15 +119,13 @@ public class GameManager : MonoBehaviour
         return value;
     }
 
+    private Vector3 lastPosition;
+
     private void CarCreate(GameObject carObject, Vector3 position, float speed)
     {
-        DirectionType direction = SettingToDirection(position);
-        Debug.Log(direction);
-        Debug.Log(ReversePosition(position, direction));
+        DirectionType direction = SettingToDirection(position); // Geldiği yer
         SpawnPoint spawnPoint = SpawnPoints.FirstOrDefault(it => it.Position == ReversePosition(position,direction));
         SpawnPoint forwardPoint = SpawnPoints.FirstOrDefault(it => it.Position == position);
-
-        Debug.Log("SP : " + spawnPoint.SpawnCount + "  FW " + forwardPoint.SpawnCount);
 
         if (spawnPoint.SpawnCount < 2 && forwardPoint.SpawnCount == 0)
         {
@@ -130,13 +136,15 @@ public class GameManager : MonoBehaviour
             gm.tag = direction.ToString();
             gm.GetComponent<VehicleController>().Initialize(speed,direction);
             SpawnPoints.FirstOrDefault(it => it.Position == ReversePosition(position, direction)).SpawnCount++;
+            spawnPoint.TriggeredVehicle -= spawnPoint_TriggeredVehicle;
             spawnPoint.TriggeredVehicle += spawnPoint_TriggeredVehicle;
         }
     }
 
     private void vehicleControl_Crush()
     {
-        SpawnedVehicles.ForEach(it => Destroy(it.gameObject));
+        SpawnedVehicles.Where(it => it != null).ToList().ForEach(it => Destroy(it.gameObject));
+        
         SpawnedVehicles.Clear();
         StopAllCoroutines();
         IngameUIManager.GameOver();
@@ -144,8 +152,11 @@ public class GameManager : MonoBehaviour
 
     void spawnPoint_TriggeredVehicle(GameObject obj, SpawnPoint spawn)
     {
-        Destroy(obj);
-        spawn.SpawnCount--;
+        if (spawn.SpawnCount - 1 >= 0)
+        {
+            spawn.SpawnCount--;
+            Destroy(obj);
+        }
     }
 
     private int RandomNumberGenerat()   
@@ -166,8 +177,6 @@ public class GameManager : MonoBehaviour
     private DirectionType SettingToDirection(Vector3 position)
     {
         DirectionType type = DirectionType.None;
-
-        Debug.Log("asdasd" +position);
 
         if (position.x == 9.35f && (position.y == -1.09f || position.y == 1.09f))
         {

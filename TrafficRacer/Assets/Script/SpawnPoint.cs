@@ -29,7 +29,6 @@ public class SpawnPoint : MonoBehaviour
     {
         if (TriggeredVehicle != null)
         {
-            Debug.Log("MANANNA");
             TriggeredVehicle(collider.gameObject,this);
         }
 

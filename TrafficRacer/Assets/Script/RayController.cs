@@ -25,7 +25,7 @@ public class RayController : MonoBehaviour
         {
             if (hit.distance < 0.5f)
             {
-                Debug.Log(hit.collider.name);
+              //  Debug.Log(hit.collider.name);
                 b = true;
                 OnDetected();
             }
@@ -37,7 +37,7 @@ public class RayController : MonoBehaviour
         }
         else
         {
-            Debug.Log("gELİYOR");
+
             OnNotDetected();
         }
 	
