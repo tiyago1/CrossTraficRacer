@@ -10,9 +10,20 @@ public class UIManager : MonoBehaviour
     private int mScore;
 
     public GameOverPanel GameOverPanel;
+    public ButtonManager StartButton;
 
     #endregion //Fields
 	
+    #region Unity Methods
+
+    public void Start()
+    {
+        if(StartButton != null)
+            StartButton.OnClickEvent += OnStartButtonClicked;
+    }
+
+    #endregion // Unity Methods
+
 	#region Public Methods
 
     public void StartTimer()
@@ -22,6 +33,12 @@ public class UIManager : MonoBehaviour
 
     public void OnStartButtonClicked()
     {
+        StartCoroutine(SceneTranslate());
+    }
+
+    private IEnumerator SceneTranslate()
+    {
+        yield return new WaitForSeconds(0.2f);
         UnityEngine.SceneManagement.SceneManager.LoadScene(1);
     }
 

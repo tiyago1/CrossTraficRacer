@@ -1,11 +1,10 @@
 ﻿
 using UnityEngine;
 using System.Collections;
-using UnityEngine.EventSystems;
 using System.Collections.Generic;
 using System;
 
-public class VehicleController : MonoBehaviour
+public class VehicleController : MonoBehaviour 
 {
     #region Constants 
 
@@ -19,6 +18,7 @@ public class VehicleController : MonoBehaviour
     public bool isMoveable = true;
     public bool isDetectStop;
     private float mSpeed;
+    private float mLastSpeed;
 
     public List<Animator> CarLightAnimator;
     public RayController RayController;
@@ -26,6 +26,11 @@ public class VehicleController : MonoBehaviour
 
     public event Action Crush;
 
+    private float mDragSpeed;
+    private float mDragValue;
+
+	public float mWaitingSecond;
+	
 	#endregion //Fields
 	
 	#region Unity Methods
@@ -64,7 +69,6 @@ public class VehicleController : MonoBehaviour
 
     public void Initialize(float speed, DirectionType direction)
     {
-        Debug.Log(direction);
         switch (direction)
         {
             case DirectionType.Up:
@@ -83,6 +87,7 @@ public class VehicleController : MonoBehaviour
         }
 
         mSpeed = speed;
+        mLastSpeed = mSpeed;
         mDirection = direction;
         SetupToCar(false);
         RayController.Detected += RayController_Detected;
@@ -96,7 +101,6 @@ public class VehicleController : MonoBehaviour
         {
             isMoveable = true;
         }
-        Debug.Log("ggg");
         if(isDetectStop)
         {
             isDetectStop = false;
@@ -110,15 +114,59 @@ public class VehicleController : MonoBehaviour
 
     public void OnMouseDown()
     {
-        SetupToCar(isMoveable);
-        Debug.Log("Stop");
+        mSpeed = mLastSpeed;
+
+        StopCarLightSansor();
+        mDragValue = Input.mousePosition.x;
+        SetupToCar(true);
     }
 
-    //public void OnMouseDrag() 
-    //{
-    //    mSpeed = 10;
-    //}
+    public void OnMouseDrag()
+    {
+        float currentDragValue = Input.mousePosition.x;
 
+        if (mDragValue != currentDragValue)
+        {
+            float dragingValue = Mathf.Abs(mDragValue - currentDragValue);
+            if (dragingValue > 10)
+            {
+                SetupToCar(false);
+                
+                mSpeed = 7;
+            }
+        }
+    }
+/* 
+    public void OnMouseDown()
+    {
+        StopCarLightSansor();
+        isMoveable = false;
+        mDragValue = Input.mousePosition.x;
+    }
+
+    public void OnMouseUp()
+    {
+        
+    }
+
+     public void OnMouseDrag()
+    {
+        float curretDragValue =Input.mousePosition.x;
+        if (mDragValue != curretDragValue)
+        {
+            float dragingValue = Mathf.Abs(mDragValue - curretDragValue);
+            if (dragingValue > 5)
+            {
+                SetupToCar(false);
+                mSpeed = 7;
+            }
+            else
+            {
+                SetupToCar(true);
+            }
+        }
+    }
+*/
     public void OnCollisionEnter2D(Collision2D coll) 
     {
         OnCrushed();
@@ -144,44 +192,33 @@ public class VehicleController : MonoBehaviour
     {
         if (isStop)
         {
-            StartCoroutine(TimeTicker());
+            StartCoroutine(StartCarLightAnimator());
             isMoveable = false;
         }
         else
         {
-            StopCoroutine(TimeTicker());
+            StopCoroutine(StartCarLightAnimator());
             isMoveable = true;
         }
     }
 
-    //private Vector3 ConvertVector3ToDirect()
-    //{
-    //    Vector3 v3;
-
-    //    switch (mDirection)
-    //    {
-    //        case DirectionType.Up:
-    //            break;
-    //        case DirectionType.Down:
-    //            break;
-    //        case DirectionType.Left:
-    //            break;
-    //        case DirectionType.Right:
-    //            break;
-    //        case DirectionType.None:
-    //            break;
-    //    }
-
-    //}
-
-    private IEnumerator TimeTicker()
+    private IEnumerator StartCarLightAnimator()
     {
-        yield return new WaitForSeconds(1.5f);
-        CarLightAnimator.ForEach(it => it.SetTrigger(SANSOR));
-        yield return new WaitForSeconds(1.0f);
+        yield return new WaitForSeconds(mWaitingSecond);
+        PlayCarLightSansor();
+        yield return new WaitForSeconds(mWaitingSecond);
         SetupToCar(false);
     }
 
+    private void PlayCarLightSansor()
+    {
+        CarLightAnimator.ForEach(it => it.SetTrigger(SANSOR));
+    }
+
+    private void StopCarLightSansor()
+    {
+        CarLightAnimator.ForEach(it => it.SetTrigger(DEFAULT));
+    }
 
 	#endregion //Private Methods
 }

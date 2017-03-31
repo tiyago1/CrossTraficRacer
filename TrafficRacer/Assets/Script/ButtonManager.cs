@@ -1,9 +1,12 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using System.Collections;
 
-public class IngameUIManager : MonoBehaviour 
+public class ButtonManager : MonoBehaviour 
 {
 	#region Fields
+
+	public event Action OnClickEvent;
 
 	#endregion //Fields
 	
@@ -28,6 +31,17 @@ public class IngameUIManager : MonoBehaviour
 	
 	}
 	
+	/// <summary>
+	/// OnMouseUp is called when the user has released the mouse button.
+	/// </summary>
+	void OnMouseUp()
+	{
+		if (OnClickEvent != null)
+		{
+			OnClickEvent();
+		}
+	}
+
 	#endregion // Public Methods
 	
 	#region Private Methods

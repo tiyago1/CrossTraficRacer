@@ -47,8 +47,7 @@ public class GameManager : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.Alpha1))
         {
-          
-                CarCreate(CarsPrefabs[RandomNumberGenerat()], SpawnTransform[1], RandomSpeed());
+            CarCreate(CarsPrefabs[RandomNumberGenerat()], SpawnTransform[1], RandomSpeed());
         }
 
         if (Input.GetKeyDown(KeyCode.Alpha2))
